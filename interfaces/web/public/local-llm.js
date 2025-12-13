@@ -316,6 +316,8 @@ class LocalLLMClient {
       const stream = await this.engine.chat.completions.create({
         messages,
         temperature: options.temperature ?? 0.7,
+        top_p: options.topP ?? 0.9,
+        frequency_penalty: options.repetitionPenalty ?? 1.1,
         max_tokens: options.maxTokens ?? 2048,
         stream: true,
       });
@@ -365,6 +367,8 @@ class LocalLLMClient {
     const response = await this.engine.chat.completions.create({
       messages,
       temperature: options.temperature ?? 0.7,
+      top_p: options.topP ?? 0.9,
+      frequency_penalty: options.repetitionPenalty ?? 1.1,
       max_tokens: options.maxTokens ?? 2048,
       stream: false,
     });

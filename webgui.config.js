@@ -66,7 +66,9 @@ export default {
   defaults: {
     provider: 'local',
     model: 'Ministral-3B',
-    temperature: 0.7,
+    temperature: 0.7,        // 0.3-0.5 for factual/code, 0.8-1.0 for creative
+    topP: 0.9,               // Nucleus sampling (0.9-0.95 recommended)
+    repetitionPenalty: 1.1,  // Helps prevent loops (1.1-1.15 for smaller models)
     maxTokens: 2048,
     systemPrompt: 'You are a helpful, friendly assistant. Always respond in English unless asked otherwise.',
   },
