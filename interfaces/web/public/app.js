@@ -87,9 +87,11 @@ const EMBEDDED_CONFIG = {
   defaults: {
     provider: 'local',
     model: 'Ministral-3B',
-    temperature: 0.7,
+    temperature: 0.6,
     topP: 0.9,
-    repetitionPenalty: 1.1,
+    frequencyPenalty: 0.0,
+    presencePenalty: 0.0,
+    repetitionPenalty: 1.0,
     maxTokens: 2048,
     systemPrompt: 'You are a helpful, friendly assistant.',
   },

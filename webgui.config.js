@@ -66,9 +66,11 @@ export default {
   defaults: {
     provider: 'local',
     model: 'Ministral-3B',
-    temperature: 0.7,        // 0.3-0.5 for factual/code, 0.8-1.0 for creative
+    temperature: 0.6,        // 0.3-0.5 for factual/code, 0.8-1.0 for creative
     topP: 0.9,               // Nucleus sampling (0.9-0.95 recommended)
-    repetitionPenalty: 1.1,  // Helps prevent loops (1.1-1.15 for smaller models)
+    frequencyPenalty: 0.0,   // Penalize repeated tokens (-2.0 to 2.0)
+    presencePenalty: 0.0,    // Penalize tokens already present (-2.0 to 2.0)
+    repetitionPenalty: 1.0,  // MLC-specific repetition penalty (> 0)
     maxTokens: 2048,
     systemPrompt: 'You are a helpful, friendly assistant. Always respond in English unless asked otherwise.',
   },
