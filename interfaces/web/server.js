@@ -41,8 +41,8 @@ export function createWebServer(options = {}) {
         // 'wasm-unsafe-eval' needed for WebAssembly compilation
         // 'unsafe-inline' needed for marked.js and inline event handlers
         scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "'wasm-unsafe-eval'", "blob:", "cdn.jsdelivr.net", "unpkg.com", "esm.run"],
-        styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
-        fontSrc: ["'self'", "fonts.gstatic.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com", "cdn.jsdelivr.net"],
+        fontSrc: ["'self'", "fonts.gstatic.com", "cdn.jsdelivr.net"],
         imgSrc: ["'self'", "data:", "blob:", "https:"],
         connectSrc: ["'self'", "http://127.0.0.1:*", "http://localhost:*", "https://huggingface.co", "https://*.huggingface.co", "https://*.hf.co", "https://hf.co", "https://esm.run", "https://cdn.jsdelivr.net", "https://raw.githubusercontent.com"],
         workerSrc: ["'self'", "blob:"],
