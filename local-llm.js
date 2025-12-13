@@ -315,9 +315,11 @@ class LocalLLMClient {
     try {
       const stream = await this.engine.chat.completions.create({
         messages,
-        temperature: options.temperature ?? 0.7,
+        temperature: options.temperature ?? 0.6,
         top_p: options.topP ?? 0.9,
-        frequency_penalty: options.repetitionPenalty ?? 1.1,
+        frequency_penalty: options.frequencyPenalty ?? 0.0,
+        presence_penalty: options.presencePenalty ?? 0.0,
+        repetition_penalty: options.repetitionPenalty ?? 1.0,
         max_tokens: options.maxTokens ?? 2048,
         stream: true,
       });
@@ -366,9 +368,11 @@ class LocalLLMClient {
 
     const response = await this.engine.chat.completions.create({
       messages,
-      temperature: options.temperature ?? 0.7,
+      temperature: options.temperature ?? 0.6,
       top_p: options.topP ?? 0.9,
-      frequency_penalty: options.repetitionPenalty ?? 1.1,
+      frequency_penalty: options.frequencyPenalty ?? 0.0,
+      presence_penalty: options.presencePenalty ?? 0.0,
+      repetition_penalty: options.repetitionPenalty ?? 1.0,
       max_tokens: options.maxTokens ?? 2048,
       stream: false,
     });
