@@ -216,6 +216,44 @@ class LocalLLMClient {
   }
 
   /**
+   * Get chat options for specific models that need template fixes
+   * Ministral models need corrected conversation template
+   */
+  getChatOptionsForModel(modelId) {
+    // Ministral models use mistral_default template which has issues
+    // Override with correct Mistral instruct format
+    if (modelId.toLowerCase().includes('ministral')) {
+      return {
+        temperature: 0.5,  // Lower temp for more coherent output
+        repetition_penalty: 1.1,  // Help prevent repetition
+        conv_template: {
+          name: 'mistral_instruct',
+          system_template: '[INST] {system_message}\n',
+          system_message: 'You are a helpful assistant. Always respond in English unless asked otherwise.',
+          system_prefix_token_ids: [1],
+          add_role_after_system_message: false,
+          roles: {
+            user: '[INST]',
+            assistant: '[/INST]',
+            tool: '[INST]'
+          },
+          role_templates: {
+            user: '{user_message}',
+            assistant: '{assistant_message}',
+            tool: '{tool_message}'
+          },
+          seps: ['</s>'],
+          role_content_sep: ' ',
+          role_empty_sep: '',
+          stop_str: ['</s>'],
+          stop_token_ids: [2]
+        }
+      };
+    }
+    return undefined;
+  }
+
+  /**
    * Load a model
    */
   async loadModel(modelId, onProgress) {
@@ -300,8 +338,11 @@ class LocalLLMClient {
       // Store reference so cancelLoad() can abort it
       this.loadingEngine = engine;
       
+      // Build chat options - fix conversation template for Ministral models
+      const chatOpts = this.getChatOptionsForModel(modelId);
+      
       // reload() uses internal reloadController that can be aborted via unload()
-      await engine.reload(modelId);
+      await engine.reload(modelId, chatOpts);
 
       // Check if cancelled during load
       if (this.loadCancelled) {
