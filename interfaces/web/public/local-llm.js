@@ -7,6 +7,7 @@ class LocalLLMClient {
   constructor() {
     this.mlc = null;
     this.engine = null;
+    this.loadingEngine = null; // Engine being loaded (for cancellation)
     this.currentModel = null;
     this.loadProgress = { progress: 0, text: '', phase: 'idle' };
     this.config = null;
@@ -172,18 +173,37 @@ class LocalLLMClient {
 
   /**
    * Cancel ongoing model load
+   * This now properly aborts in-flight downloads by calling unload() on the engine
+   * which triggers the internal reloadController.abort()
    */
   async cancelLoad() {
     this.loadCancelled = true;
+    
+    // If we have a loading engine, unload() will abort the reloadController
+    // which cancels in-flight fetch requests
+    if (this.loadingEngine) {
+      try {
+        console.log('[LocalLLM] Aborting model load...');
+        await this.loadingEngine.unload();
+      } catch (e) {
+        // AbortError is expected when cancelling
+        if (e.name !== 'AbortError') {
+          console.warn('[LocalLLM] Error unloading during cancel:', e);
+        }
+      }
+      this.loadingEngine = null;
+    }
+    
     if (this.engine) {
       try {
         await this.engine.unload();
       } catch (e) {
-        console.warn('[LocalLLM] Error unloading during cancel:', e);
+        console.warn('[LocalLLM] Error unloading engine:', e);
       }
       this.engine = null;
       this.currentModel = null;
     }
+    
     this.isLoading = false;
     this.loadProgress = { progress: 0, text: 'Cancelled', phase: 'idle' };
   }
@@ -219,6 +239,7 @@ class LocalLLMClient {
 
     this.isLoading = true;
     this.loadCancelled = false;
+    this.loadingEngine = null;
     this.loadProgress = { progress: 0, text: 'Initializing...', phase: 'init' };
     onProgress?.(this.loadProgress);
 
@@ -249,7 +270,9 @@ class LocalLLMClient {
     };
 
     try {
-      this.engine = await this.mlc.CreateMLCEngine(modelId, {
+      // Use MLCEngine class directly instead of CreateMLCEngine
+      // This allows us to call unload() during loading to abort via reloadController
+      const engine = new this.mlc.MLCEngine({
         appConfig,
         initProgressCallback: (progress) => {
           // Check if cancelled
@@ -273,17 +296,24 @@ class LocalLLMClient {
           onProgress?.(this.loadProgress);
         }
       });
+      
+      // Store reference so cancelLoad() can abort it
+      this.loadingEngine = engine;
+      
+      // reload() uses internal reloadController that can be aborted via unload()
+      await engine.reload(modelId);
 
       // Check if cancelled during load
       if (this.loadCancelled) {
-        if (this.engine) {
-          await this.engine.unload();
-          this.engine = null;
-        }
+        await engine.unload();
+        this.loadingEngine = null;
         this.isLoading = false;
         throw new Error('Loading cancelled');
       }
 
+      // Success - transfer to main engine reference
+      this.engine = engine;
+      this.loadingEngine = null;
       this.currentModel = modelId;
       this.isLoading = false;
       this.loadProgress = { progress: 1, text: 'Ready', phase: 'ready' };
@@ -292,7 +322,16 @@ class LocalLLMClient {
       return { loaded: true };
       
     } catch (e) {
+      this.loadingEngine = null;
       this.isLoading = false;
+      
+      // AbortError means cancel was successful
+      if (e.name === 'AbortError' || e.message?.includes('aborted') || e.message?.includes('Abort')) {
+        this.loadProgress = { progress: 0, text: 'Cancelled', phase: 'idle' };
+        onProgress?.(this.loadProgress);
+        throw new Error('Loading cancelled');
+      }
+      
       this.loadProgress = { progress: 0, text: e.message, phase: 'error' };
       onProgress?.(this.loadProgress);
       throw e;
