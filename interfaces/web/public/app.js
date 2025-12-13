@@ -86,7 +86,8 @@ const EMBEDDED_CONFIG = {
   ok: true,
   defaults: {
     provider: 'local',
-    model: 'Ministral-3B',
+    model: 'Llama-3.2-3B-Instruct-q4f16_1-MLC',
+    mobileModel: 'SmolLM2-360M-Instruct-q4f16_1-MLC',
     temperature: 0.6,
     topP: 0.9,
     frequencyPenalty: 0.0,
@@ -104,15 +105,22 @@ const EMBEDDED_CONFIG = {
       useIndexedDBCache: true,
       models: [
         {
-          id: 'Ministral-3B',
-          name: 'Ministral 3B',
+          id: 'Llama-3.2-3B-Instruct-q4f16_1-MLC',
+          name: 'Llama 3.2 3B',
           parameters: '3B',
-          context: 131072,
-          vramRequired: 2000,
+          context: 4096,
+          vramRequired: 2264,
           vision: false,
-          modelUrl: 'https://huggingface.co/willopcbeta/Ministral-3-3B-Instruct-2512-Llamafied-TextOnly-q4f16_1-MLC',
-          modelLib: 'https://huggingface.co/willopcbeta/Ministral-3-3B-Instruct-2512-Llamafied-TextOnly-q4f16_1-MLC/resolve/main/Ministral-3-3B-Instruct-2512-Llamafied-TextOnly-q4f16_1-cs1k-webgpu.wasm',
-          description: 'Mistral Ministral 3B - runs locally'
+          description: 'Meta Llama 3.2 3B - runs locally'
+        },
+        {
+          id: 'SmolLM2-360M-Instruct-q4f16_1-MLC',
+          name: 'SmolLM2 360M',
+          parameters: '360M',
+          context: 4096,
+          vramRequired: 376,
+          vision: false,
+          description: 'HuggingFace SmolLM2 360M - tiny, fast, great for mobile'
         },
         {
           id: 'Llama-3.2-1B-Instruct-q4f16_1-MLC',
@@ -2065,8 +2073,23 @@ async function loadModels() {
       }
     }
     
-    // Default: no model selected - user must choose
-    console.log('[LoadModels] No saved model found, defaulting to Select Model');
+    // Auto-select default model based on device type
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const defaultModelId = isMobile 
+      ? (APP_CONFIG?.defaults?.mobileModel || APP_CONFIG?.defaults?.model)
+      : APP_CONFIG?.defaults?.model;
+    
+    if (defaultModelId) {
+      const defaultModel = allModels.find(m => m.id === defaultModelId && (m.available || m.provider === 'local'));
+      if (defaultModel) {
+        console.log(`[LoadModels] Auto-selecting ${isMobile ? 'mobile' : 'desktop'} default:`, defaultModelId);
+        selectModel(defaultModel.id, getModelDisplayName(defaultModel), defaultModel.provider);
+        return;
+      }
+    }
+    
+    // Fallback: no model selected - user must choose
+    console.log('[LoadModels] No default model found, user must select');
     modelBtn.textContent = 'Select Model';
     currentModel = null;
     currentProvider = null;

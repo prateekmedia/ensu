@@ -36,16 +36,22 @@ export default {
       // Find more MLC-compatible models: https://huggingface.co/mlc-ai
       models: [
         {
-          id: 'Ministral-3B',
-          name: 'Ministral 3B',
+          id: 'Llama-3.2-3B-Instruct-q4f16_1-MLC',
+          name: 'Llama 3.2 3B',
           parameters: '3B',
-          context: 131072, // 128K context (model supports 256K but limited for VRAM)
-          vramRequired: 2000,
+          context: 4096,
+          vramRequired: 2264,
           vision: false,
-          // Custom model from HuggingFace - needs modelUrl & modelLib
-          modelUrl: 'https://huggingface.co/willopcbeta/Ministral-3-3B-Instruct-2512-Llamafied-TextOnly-q4f16_1-MLC',
-          modelLib: 'https://huggingface.co/willopcbeta/Ministral-3-3B-Instruct-2512-Llamafied-TextOnly-q4f16_1-MLC/resolve/main/Ministral-3-3B-Instruct-2512-Llamafied-TextOnly-q4f16_1-cs1k-webgpu.wasm',
-          description: 'Mistral Ministral 3B - runs locally'
+          description: 'Meta Llama 3.2 3B - runs locally'
+        },
+        {
+          id: 'SmolLM2-360M-Instruct-q4f16_1-MLC',
+          name: 'SmolLM2 360M',
+          parameters: '360M',
+          context: 4096,
+          vramRequired: 376,
+          vision: false,
+          description: 'HuggingFace SmolLM2 360M - tiny, fast, great for mobile'
         },
         {
           id: 'Llama-3.2-1B-Instruct-q4f16_1-MLC',
@@ -65,7 +71,8 @@ export default {
   // ─────────────────────────────────────────────────────────────
   defaults: {
     provider: 'local',
-    model: 'Ministral-3B',
+    model: 'Llama-3.2-3B-Instruct-q4f16_1-MLC',
+    mobileModel: 'SmolLM2-360M-Instruct-q4f16_1-MLC',  // Default for mobile devices
     temperature: 0.6,        // 0.3-0.5 for factual/code, 0.8-1.0 for creative
     topP: 0.9,               // Nucleus sampling (0.9-0.95 recommended)
     frequencyPenalty: 0.0,   // Penalize repeated tokens (-2.0 to 2.0)
