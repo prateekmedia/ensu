@@ -2061,7 +2061,13 @@ async function loadModels() {
     // Re-render lucide icons
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
-    // Only restore saved model if one was previously selected
+    // Auto-select default model based on device type
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const defaultModelId = isMobile 
+      ? (APP_CONFIG?.defaults?.mobileModel || APP_CONFIG?.defaults?.model)
+      : APP_CONFIG?.defaults?.model;
+    
+    // Only restore saved model if one was previously selected AND it still exists
     const savedModelId = localStorage.getItem('selectedModel');
     const savedProvider = localStorage.getItem('selectedProvider');
     
@@ -2070,15 +2076,15 @@ async function loadModels() {
       if (savedModel) {
         selectModel(savedModel.id, getModelDisplayName(savedModel), savedModel.provider);
         return;
+      } else {
+        // Clear invalid saved model
+        console.log('[LoadModels] Saved model no longer exists, clearing:', savedModelId);
+        localStorage.removeItem('selectedModel');
+        localStorage.removeItem('selectedProvider');
       }
     }
     
-    // Auto-select default model based on device type
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const defaultModelId = isMobile 
-      ? (APP_CONFIG?.defaults?.mobileModel || APP_CONFIG?.defaults?.model)
-      : APP_CONFIG?.defaults?.model;
-    
+    // Use default model for device type
     if (defaultModelId) {
       const defaultModel = allModels.find(m => m.id === defaultModelId && (m.available || m.provider === 'local'));
       if (defaultModel) {
