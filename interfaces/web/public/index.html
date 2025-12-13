@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ensu</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Source+Serif+Pro:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <!-- Markdown parser + sanitizer -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header class="masthead">
+      <a href="https://ente.io/?ref=ensu" target="_blank" class="logo-link">
+        <h1>ensu</h1>
+        <span class="by-ente">a toy by ente</span>
+      </a>
+      <div class="masthead-controls">
+        <button class="picker-btn" id="sessionBtn">New Chat</button>
+        <button class="picker-btn" id="modelBtn">Select Model</button>
+        </div>
+    </header>
+    <!-- Model Loading Banner (non-blocking) -->
+    <div class="local-banner" id="localBanner" style="display:none">
+      <div class="local-banner-content">
+        <div class="local-banner-row">
+          <span class="local-banner-text" id="localBannerText">Loading model...</span>
+          <button class="local-banner-cancel" id="localBannerCancel" title="Cancel">×</button>
+        </div>
+        <div class="local-banner-progress">
+          <div class="local-banner-bar" id="localBannerBar"></div>
+        </div>
+      </div>
+    </div>
+    <div class="context-warning" id="contextWarning" style="display:none">
+      <span class="warning-text">
+        <i data-lucide="alert-triangle"></i>
+        Context <span id="contextPercent">80</span>% full — consider starting a new chat
+      </span>
+      <button class="warning-action" id="newChatBtn">New Chat</button>
+      <button class="warning-dismiss" id="dismissWarning">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <div class="chat-area" id="chat">
+      <div class="welcome">
+        <p class="welcome-text">Select a model and begin your conversation.</p>
+      </div>
+    </div>
+  </div>
+  <div class="input-area">
+    <div class="input-wrap">
+      <div class="image-preview" id="imagePreview"></div>
+      <div class="input-row">
+        <input type="text" id="input" placeholder="Compose your message..." autocomplete="off">
+        <button class="attach-btn" id="uploadBtn" type="button" title="Attach image">
+          <i data-lucide="image-plus"></i>
+        </button>
+        <button class="send-btn" id="sendBtn" type="button">
+          <i data-lucide="send-horizontal"></i>
+        </button>
+      </div>
+    </div>
+    <input type="file" id="fileInput" accept="image/*" style="display:none">
+  </div>
+
+  <!-- Session Modal -->
+  <div class="modal picker-modal" id="sessionModal">
+    <div class="picker-modal-content">
+      <div class="picker-modal-header">
+        <h2>Chats</h2>
+        <button class="modal-close-minimal" id="sessionModalClose">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="picker-modal-body">
+        <button class="picker-modal-option new-chat-option" id="newChatOption">
+          <i data-lucide="plus"></i>
+          <span>New Chat</span>
+        </button>
+        <div class="picker-modal-divider"></div>
+        <div class="session-list" id="sessionList">
+          <!-- Sessions populated dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Model Modal -->
+  <div class="modal picker-modal" id="modelModal">
+    <div class="picker-modal-content">
+      <div class="picker-modal-header">
+        <h2>Select Model</h2>
+        <button class="modal-close-minimal" id="modelModalClose">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="picker-modal-body" id="modelModalBody">
+        <!-- Models populated dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Remote Settings Modal -->
+  <div class="modal settings-modal" id="settingsModal">
+    <div class="settings-content">
+      <div class="settings-header">
+        <h2>Remote Models</h2>
+        <button class="modal-close" id="settingsClose">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      
+      <div class="settings-body">
+        <div class="settings-note warning">
+          <strong>NOTE:</strong>
+          <span>Your conversations are sent to external servers. Use local models for complete privacy.</span>
+        </div>
+        
+        <div class="settings-field">
+          <label for="openaiUrl">OpenAI Compatible Base URL</label>
+          <input type="text" id="openaiUrl" placeholder="https://api.example.com/v1">
+          <span class="field-hint">For local servers, enable CORS</span>
+        </div>
+        <div class="settings-field">
+          <label for="openaiKey">API Key</label>
+          <div class="input-with-toggle">
+            <input type="password" id="openaiKey" placeholder="sk-..." autocomplete="off">
+            <button type="button" class="toggle-visibility" data-target="openaiKey" title="Show/Hide">
+              <i data-lucide="eye"></i>
+            </button>
+          </div>
+        </div>
+        
+        <div class="settings-section models-section">
+          <div class="section-header">
+            <h3>Models</h3>
+            <button class="add-model-btn" data-provider="remote" title="Add Model">
+              <i data-lucide="plus"></i>
+            </button>
+          </div>
+          <div class="models-list" id="remoteModelsList">
+            <!-- Remote models will be populated here -->
+          </div>
+        </div>
+      </div>
+      
+      <div class="settings-footer">
+        <p class="settings-note">
+          <i data-lucide="shield-check"></i>
+          Credentials are encrypted locally. Never sent to our servers.
+        </p>
+        <button class="settings-save" id="settingsSave">Save</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Local Settings Modal -->
+  <div class="modal settings-modal" id="localSettingsModal">
+    <div class="settings-content">
+      <div class="settings-header">
+        <h2>Local Models</h2>
+        <button class="modal-close" id="localSettingsClose">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      
+      <div class="settings-body">
+        <div class="settings-note info">
+          <strong>100% Private:</strong>
+          <span>Local models run entirely in your browser using WebGPU. No data leaves your device.</span>
+        </div>
+        
+        <div class="settings-section models-section">
+          <div class="section-header">
+            <h3>Models</h3>
+            <button class="add-model-btn" data-provider="local" title="Add Model">
+              <i data-lucide="plus"></i>
+            </button>
+          </div>
+          <p class="field-hint">Add WebLLM-compatible models from <a href="https://huggingface.co/mlc-ai" target="_blank">HuggingFace MLC-AI</a></p>
+          <div class="models-list" id="localModelsList">
+            <!-- Local models will be populated here -->
+          </div>
+        </div>
+      </div>
+      
+      <div class="settings-footer">
+        <button class="settings-save" id="localSettingsSave">Done</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Add Model Modal -->
+  <div class="modal add-model-modal" id="addModelModal">
+    <div class="add-model-content">
+      <div class="settings-header">
+        <h2 id="addModelTitle">Add Model</h2>
+        <button class="modal-close" id="addModelClose">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="settings-body">
+        <div class="model-tabs" id="modelTabsField" style="display:none;">
+          <button type="button" class="model-tab active" data-tab="available">Available</button>
+          <button type="button" class="model-tab" data-tab="custom">Custom</button>
+        </div>
+        <div class="model-tab-content" id="availableModelsTab">
+          <div class="model-preset-list" id="modelPresetField">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+        <div class="model-tab-content" id="customModelsTab" style="display:none;">
+          <div class="settings-field">
+            <label for="modelId">Model ID *</label>
+            <input type="text" id="modelId" placeholder="Llama-3.2-1B-Instruct-q4f16_1-MLC" autocomplete="off">
+            <span class="field-hint">The exact MLC model ID (from HuggingFace)</span>
+          </div>
+          <div class="settings-field">
+            <label for="modelName">Display Name</label>
+            <input type="text" id="modelName" placeholder="Llama 3.2 1B" autocomplete="off">
+            <span class="field-hint">Friendly name shown in the picker</span>
+          </div>
+          <div class="settings-field">
+            <label for="modelUrl">HuggingFace Model URL</label>
+            <input type="text" id="modelUrl" placeholder="https://huggingface.co/mlc-ai/Llama-3.2-1B-Instruct-q4f16_1-MLC" autocomplete="off">
+            <span class="field-hint">Full URL to the MLC model repo (leave empty for built-in models)</span>
+          </div>
+          <div class="settings-field">
+            <label for="modelLib">WASM Library URL</label>
+            <input type="text" id="modelLib" placeholder="https://huggingface.co/.../model-webgpu.wasm" autocomplete="off">
+            <span class="field-hint">Optional: URL to custom WebGPU WASM file</span>
+          </div>
+          <div class="settings-field">
+            <label for="modelVram">VRAM Required (MB)</label>
+            <input type="number" id="modelVram" placeholder="2000" autocomplete="off">
+            <span class="field-hint">Approximate GPU memory needed</span>
+          </div>
+          <div class="settings-field">
+            <label for="localModelContext">Context Window</label>
+            <input type="number" id="localModelContext" placeholder="4096" autocomplete="off">
+            <span class="field-hint">Maximum context length</span>
+          </div>
+        </div>
+        <!-- Remote model fields (shown when provider is remote) -->
+        <div id="remoteModelFields" style="display:none;">
+          <div class="settings-field">
+            <label for="remoteModelId">Model ID *</label>
+            <input type="text" id="remoteModelId" placeholder="gpt-4o, claude-sonnet" autocomplete="off">
+            <span class="field-hint">The exact model name used in API calls</span>
+          </div>
+          <div class="settings-field">
+            <label for="remoteModelName">Display Name</label>
+            <input type="text" id="remoteModelName" placeholder="GPT-4o" autocomplete="off">
+            <span class="field-hint">Friendly name shown in the picker</span>
+          </div>
+          <div class="settings-field">
+            <label for="modelContext">Context Window</label>
+            <input type="number" id="modelContext" placeholder="128000" autocomplete="off">
+          </div>
+          <div class="settings-field checkbox-field">
+            <label>
+              <input type="checkbox" id="modelVision">
+              Supports vision (image inputs)
+            </label>
+          </div>
+          <div class="settings-field" id="apiTypeField">
+            <label>API Type</label>
+            <div class="api-type-toggle">
+              <button type="button" class="api-type-btn active" data-type="chat" id="modelApiTypeChat">Chat</button>
+              <button type="button" class="api-type-btn" data-type="responses" id="modelApiTypeResponses">Responses</button>
+            </div>
+            <span class="field-hint">Chat Completions or Responses API</span>
+          </div>
+        </div>
+      </div>
+      <div class="settings-footer">
+        <button class="btn-secondary" id="cancelModelBtn">Cancel</button>
+        <button class="btn-primary" id="saveModelBtn">Save Model</button>
+      </div>
+      <input type="hidden" id="modelProvider" value="">
+      <input type="hidden" id="editingModelId" value="">
+    </div>
+  </div>
+
+  <!-- Image Viewer Modal -->
+  <div class="modal" id="imageModal">
+    <button class="modal-close" id="modalClose">
+      <i data-lucide="x"></i>
+    </button>
+    <img class="modal-image" id="modalImage" src="" alt="Full size">
+  </div>
+
+  <!-- Scroll to bottom button -->
+  <button class="scroll-to-bottom" id="scrollToBottomBtn" style="display:none" title="Scroll to bottom">
+    <i data-lucide="arrow-down"></i>
+  </button>
+
+  <script src="/app.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+node_modules
+.DS_Store
+npm-debug.log*
+.plans
+
+# Local config overrides
+webgui.config.local.js
