@@ -2808,20 +2808,26 @@ window.addEventListener('scroll', checkCompactMode, { passive: true });
 })();
 
 // ─────────────────────────────────────────────────────────────
-// URL-based Session Routing
+// URL-based Session Routing (uses ?s= query parameter)
 // ─────────────────────────────────────────────────────────────
 function getSessionIdFromUrl() {
-  const path = window.location.pathname;
-  // Allow alphanumeric, hyphens, underscores (matches sanitizeId in storage.js)
-  const match = path.match(/^\/chat\/([a-zA-Z0-9_-]+)$/);
-  return match ? match[1] : null;
+  const params = new URLSearchParams(window.location.search);
+  const sessionId = params.get('s');
+  // Validate: allow alphanumeric, hyphens, underscores (matches sanitizeId in storage.js)
+  if (sessionId && /^[a-zA-Z0-9_-]+$/.test(sessionId)) {
+    return sessionId;
+  }
+  return null;
 }
 
 function updateUrlForSession(sessionId) {
+  const url = new URL(window.location.href);
   if (sessionId) {
-    history.pushState({ sessionId }, '', `/chat/${sessionId}`);
+    url.searchParams.set('s', sessionId);
+    history.pushState({ sessionId }, '', url.toString());
   } else {
-    history.pushState({}, '', '/');
+    url.searchParams.delete('s');
+    history.pushState({}, '', url.pathname);
   }
 }
 
