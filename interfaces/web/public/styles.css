@@ -96,15 +96,16 @@ body {
 }
 
 .logo-link h1 {
-  color: var(--ink);
+  color: #FFD700;
 }
 
 .logo-link:hover h1 {
-  color: var(--muted);
+  color: #FFC700;
 }
 
 .by-ente {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Gilroy', 'Gilroy-SemiBold', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 600;
   font-size: 16px;
   color: var(--muted);
   margin-top: -4px;
