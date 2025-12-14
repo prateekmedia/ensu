@@ -60,4 +60,4 @@ styles.css      # Styles
 
 ## License
 
-MIT
+MPL-2.0
