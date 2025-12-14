@@ -375,7 +375,9 @@ function addMessage(role, content, images = [], animate = true) {
   
   const textEl = div.querySelector('.text');
   if (isSent) {
-    textEl.textContent = content;
+    // Escape HTML and convert newlines to <br> for sent messages
+    const escaped = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    textEl.innerHTML = escaped.replace(/\n/g, '<br>');
   } else {
     textEl.innerHTML = renderMarkdown(content);
   }
@@ -2673,9 +2675,9 @@ inputEl.addEventListener('keydown', (e) => {
   }
 });
 
-// Auto-resize textarea (max 2 lines ~66px)
+// Auto-resize textarea (max 2 lines ~62px)
 function autoResizeInput() {
-  const maxHeight = 66;
+  const maxHeight = 62;
   inputEl.style.height = 'auto';
   inputEl.style.height = Math.min(inputEl.scrollHeight, maxHeight) + 'px';
   // Show scrollbar if content exceeds max height

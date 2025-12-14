@@ -1881,8 +1881,8 @@ body {
 .input-area {
   position: fixed;
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
   width: 100%;
   background: var(--cream);
   border: 1px solid transparent;
@@ -1905,6 +1905,9 @@ body {
 
 /* Floating style when scrolled */
 .input-area.floating {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
   bottom: 16px;
   width: calc(100% - 40px);
   max-width: 720px;
@@ -1921,6 +1924,8 @@ body {
 .input-wrap {
   width: 100%;
   max-width: 720px;
+  margin: 0;
+  padding: 0;
 }
 
 .image-preview {
@@ -1986,7 +1991,7 @@ body {
   color: var(--muted);
   cursor: pointer;
   padding: 8px;
-  padding-bottom: 12px;
+  padding-bottom: 10px;
   transition: color 0.2s;
   display: flex;
   align-items: center;
@@ -2011,7 +2016,7 @@ body {
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--muted);
-  padding: 12px 0;
+  padding: 10px 0;
   font-family: 'Source Serif Pro', serif;
   font-size: 15px;
   color: var(--ink);
@@ -2019,9 +2024,9 @@ body {
   transition: border-color 0.2s, padding 0.25s, border 0.25s;
   resize: none;
   overflow-y: hidden;
-  min-height: 42px;
-  max-height: 66px;
-  line-height: 1.5;
+  min-height: 38px;
+  max-height: 62px;
+  line-height: 1.4;
 }
 
 #input:focus {
@@ -2049,7 +2054,7 @@ body {
   cursor: default;
   padding: 8px;
   padding-right: 0;
-  padding-bottom: 12px;
+  padding-bottom: 10px;
   transition: color 0.2s;
   display: flex;
   align-items: center;
