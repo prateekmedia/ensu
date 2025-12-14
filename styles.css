@@ -96,11 +96,11 @@ body {
 }
 
 .logo-link h1 {
-  color: #B8960C;
+  color: #1a1a1a;
 }
 
 .logo-link:hover h1 {
-  color: #9A7E0A;
+  color: #333;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -188,20 +188,13 @@ body {
 
 .context-warning .warning-action {
   padding: 4px 12px;
-  background: #856404;
-  color: white;
+  background: #FFD700;
+  color: #1a1a1a;
   border: none;
   border-radius: 4px;
   font-size: 13px;
   cursor: pointer;
   font-family: inherit;
-}
-
-@media (prefers-color-scheme: dark) {
-  .context-warning .warning-action {
-    background: #ffc107;
-    color: #1a1a1a;
-  }
 }
 
 .context-warning .warning-action:hover {
@@ -1040,9 +1033,9 @@ body {
 }
 
 .add-model-btn:hover {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: white;
+  background: #FFD700;
+  border-color: #FFD700;
+  color: #1a1a1a;
 }
 
 .add-model-btn svg {
@@ -1358,9 +1351,9 @@ body {
 
 .btn-primary {
   padding: 8px 16px;
-  background: var(--accent);
+  background: #FFD700;
   border: none;
-  color: white;
+  color: #1a1a1a;
   border-radius: 4px;
   font-family: inherit;
   font-size: 13px;
