@@ -2041,6 +2041,22 @@ body {
 
 #input::placeholder {
   color: var(--muted);
+  opacity: 1;
+}
+
+#input::-webkit-input-placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+#input::-moz-placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+#input:-ms-input-placeholder {
+  color: var(--muted);
+  opacity: 1;
 }
 
 #input:disabled {
