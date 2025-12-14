@@ -2,6 +2,8 @@
 
 Run LLMs locally in your browser, privately, on-device. No server required.
 
+![ensu screenshot](screenshot.png)
+
 ## Features
 
 - 🧠 **Local LLM** - Run models directly in the browser via WebGPU
