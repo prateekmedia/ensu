@@ -2602,6 +2602,7 @@ function send() {
   }
   
   inputEl.value = '';
+  inputEl.style.height = 'auto';
   updateButtonStates();
   sendMessage(text);
 }
@@ -2672,7 +2673,18 @@ inputEl.addEventListener('keydown', (e) => {
   }
 });
 
-inputEl.addEventListener('input', updateButtonStates);
+// Auto-resize textarea
+function autoResizeInput() {
+  inputEl.style.height = 'auto';
+  inputEl.style.height = Math.min(inputEl.scrollHeight, 200) + 'px';
+  // Show scrollbar if content exceeds max height
+  inputEl.style.overflowY = inputEl.scrollHeight > 200 ? 'auto' : 'hidden';
+}
+
+inputEl.addEventListener('input', () => {
+  updateButtonStates();
+  autoResizeInput();
+});
 
 inputEl.addEventListener('focus', () => {
   inputFocused = true;

@@ -1975,7 +1975,7 @@ body {
 
 .input-row {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 0;
   position: relative;
 }
@@ -1986,6 +1986,7 @@ body {
   color: var(--muted);
   cursor: pointer;
   padding: 8px;
+  padding-bottom: 12px;
   transition: color 0.2s;
   display: flex;
   align-items: center;
@@ -2005,7 +2006,7 @@ body {
   stroke-width: 1.2;
 }
 
-input[type="text"] {
+#input {
   flex: 1;
   background: transparent;
   border: none;
@@ -2016,23 +2017,28 @@ input[type="text"] {
   color: var(--ink);
   outline: none;
   transition: border-color 0.2s, padding 0.25s, border 0.25s;
+  resize: none;
+  overflow-y: hidden;
+  min-height: 42px;
+  max-height: 200px;
+  line-height: 1.5;
 }
 
-input[type="text"]:focus {
+#input:focus {
   border-bottom-color: var(--ink);
 }
 
 /* Remove underline in floating mode */
-.input-area.floating input[type="text"] {
+.input-area.floating #input {
   border-bottom: none;
   padding: 8px 4px;
 }
 
-input::placeholder {
+#input::placeholder {
   color: var(--muted);
 }
 
-input:disabled {
+#input:disabled {
   opacity: 0.5;
 }
 
@@ -2043,6 +2049,7 @@ input:disabled {
   cursor: default;
   padding: 8px;
   padding-right: 0;
+  padding-bottom: 12px;
   transition: color 0.2s;
   display: flex;
   align-items: center;
@@ -2143,7 +2150,7 @@ input:disabled {
     font-size: 17px;
   }
 
-  input[type="text"] {
+  #input {
     font-size: 17px;
   }
 
