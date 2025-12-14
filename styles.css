@@ -2020,7 +2020,7 @@ body {
   resize: none;
   overflow-y: hidden;
   min-height: 42px;
-  max-height: 200px;
+  max-height: 66px;
   line-height: 1.5;
 }
 

@@ -2673,12 +2673,13 @@ inputEl.addEventListener('keydown', (e) => {
   }
 });
 
-// Auto-resize textarea
+// Auto-resize textarea (max 2 lines ~66px)
 function autoResizeInput() {
+  const maxHeight = 66;
   inputEl.style.height = 'auto';
-  inputEl.style.height = Math.min(inputEl.scrollHeight, 200) + 'px';
+  inputEl.style.height = Math.min(inputEl.scrollHeight, maxHeight) + 'px';
   // Show scrollbar if content exceeds max height
-  inputEl.style.overflowY = inputEl.scrollHeight > 200 ? 'auto' : 'hidden';
+  inputEl.style.overflowY = inputEl.scrollHeight > maxHeight ? 'auto' : 'hidden';
 }
 
 inputEl.addEventListener('input', () => {
