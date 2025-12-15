@@ -1535,8 +1535,16 @@ body {
 }
 
 .message.sent {
-  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   padding-left: 80px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.message.sent .message-images {
+  justify-content: flex-end;
 }
 
 .message.received {
@@ -1550,6 +1558,13 @@ body {
 
 .message.sent .text {
   color: var(--sent);
+  text-align: left;
+  max-width: 100%;
+  min-width: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  overflow-x: auto;
 }
 
 .message-images {
@@ -1557,10 +1572,6 @@ body {
   gap: 8px;
   flex-wrap: wrap;
   margin-bottom: 8px;
-}
-
-.message.sent .message-images {
-  justify-content: flex-end;
 }
 
 .message-images img {
