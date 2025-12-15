@@ -86,7 +86,7 @@ const EMBEDDED_CONFIG = {
   ok: true,
   defaults: {
     provider: 'local',
-    model: 'Llama-3.2-3B-Instruct-q4f16_1-MLC',
+    model: 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC',
     mobileModel: 'SmolLM2-360M-Instruct-q4f16_1-MLC',
     temperature: 0.6,
     topP: 0.9,
@@ -105,6 +105,15 @@ const EMBEDDED_CONFIG = {
       useIndexedDBCache: true,
       models: [
         {
+          id: 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC',
+          name: 'Qwen 2.5 1.5B',
+          parameters: '1.5B',
+          context: 4096,
+          vramRequired: 1100,
+          vision: false,
+          description: 'Alibaba Qwen 2.5 1.5B - balanced performance, runs locally'
+        },
+        {
           id: 'Llama-3.2-3B-Instruct-q4f16_1-MLC',
           name: 'Llama 3.2 3B',
           parameters: '3B',
@@ -121,15 +130,6 @@ const EMBEDDED_CONFIG = {
           vramRequired: 376,
           vision: false,
           description: 'HuggingFace SmolLM2 360M - tiny, fast, great for mobile'
-        },
-        {
-          id: 'Llama-3.2-1B-Instruct-q4f16_1-MLC',
-          name: 'Llama 3.2 1B',
-          parameters: '1B',
-          context: 4096,
-          vramRequired: 879,
-          vision: false,
-          description: 'Meta Llama 3.2 1B - small, runs locally'
         },
       ]
     },
