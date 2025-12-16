@@ -1536,6 +1536,51 @@ function getModelApiType(modelId) {
   return model?.apiType || 'chat';
 }
 
+/**
+ * Format messages for OpenAI/Ollama Chat Completions API with image support
+ * Converts messages with images array to the proper multimodal format
+ */
+function formatMessagesForChatAPI(messages) {
+  return messages.map(msg => {
+    // If no images, return as-is (simple text content)
+    if (!msg.images || msg.images.length === 0) {
+      return {
+        role: msg.role,
+        content: msg.content || ''
+      };
+    }
+    
+    // Has images - convert to multimodal format
+    // Works for both OpenAI and Ollama (they use the same format)
+    const content = [];
+    
+    // Add text first if present
+    if (msg.content) {
+      content.push({
+        type: 'text',
+        text: msg.content
+      });
+    }
+    
+    // Add images
+    for (const img of msg.images) {
+      // img can be base64 string or object with base64 property
+      const base64 = typeof img === 'string' ? img : img.base64;
+      content.push({
+        type: 'image_url',
+        image_url: {
+          url: `data:image/jpeg;base64,${base64}`
+        }
+      });
+    }
+    
+    return {
+      role: msg.role,
+      content: content
+    };
+  });
+}
+
 async function sendMessageOpenAI(messages, onDelta) {
   const apiKey = await getApiKey('remote');
   let baseUrl = getBaseUrl('remote').replace(/\/+$/, ''); // Remove trailing slashes
@@ -1558,6 +1603,9 @@ async function sendMessageOpenAI(messages, onDelta) {
 }
 
 async function sendMessageOpenAIChat(messages, onDelta, apiKey, baseUrl) {
+  // Format messages with proper image support (works for OpenAI and Ollama)
+  const formattedMessages = formatMessagesForChatAPI(messages);
+  
   const response = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -1566,7 +1614,7 @@ async function sendMessageOpenAIChat(messages, onDelta, apiKey, baseUrl) {
     },
     body: JSON.stringify({
       model: currentModel,
-      messages: messages,
+      messages: formattedMessages,
       stream: true
     }),
     signal: abortController?.signal
@@ -1605,10 +1653,39 @@ async function sendMessageOpenAIChat(messages, onDelta, apiKey, baseUrl) {
 
 async function sendMessageOpenAIResponses(messages, onDelta, apiKey, baseUrl) {
   // Convert messages to Responses API format
-  const input = messages.map(m => ({
-    role: m.role === 'assistant' ? 'assistant' : m.role === 'system' ? 'system' : 'user',
-    content: m.content
-  }));
+  // The Responses API uses 'input' as an array of message objects
+  // Images are sent as input_image type within content array
+  const input = messages.map(m => {
+    const role = m.role === 'assistant' ? 'assistant' : m.role === 'system' ? 'developer' : 'user';
+    
+    // Check if message has images
+    if (m.images && m.images.length > 0) {
+      // Multimodal message with images
+      const content = [];
+      
+      // Add text if present
+      if (m.content) {
+        content.push({
+          type: 'input_text',
+          text: m.content
+        });
+      }
+      
+      // Add images
+      for (const img of m.images) {
+        const base64 = typeof img === 'string' ? img : img.base64;
+        content.push({
+          type: 'input_image',
+          image_url: `data:image/jpeg;base64,${base64}`
+        });
+      }
+      
+      return { role, content };
+    }
+    
+    // Simple text message
+    return { role, content: m.content || '' };
+  });
   
   const response = await fetch(`${baseUrl}/responses`, {
     method: 'POST',
@@ -1632,6 +1709,7 @@ async function sendMessageOpenAIResponses(messages, onDelta, apiKey, baseUrl) {
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
+  let currentEvent = null;
   
   while (true) {
     const { done, value } = await reader.read();
@@ -1642,15 +1720,41 @@ async function sendMessageOpenAIResponses(messages, onDelta, apiKey, baseUrl) {
     buffer = lines.pop() || '';
     
     for (const line of lines) {
+      // SSE format: event lines followed by data lines
+      if (line.startsWith('event: ')) {
+        currentEvent = line.slice(7).trim();
+        continue;
+      }
+      
       if (line.startsWith('data: ')) {
         const data = line.slice(6);
         if (data === '[DONE]') continue;
+        
         try {
           const json = JSON.parse(data);
-          // Responses API uses different delta format
-          const delta = json.delta?.content || json.output?.[0]?.content?.[0]?.text;
-          if (delta) onDelta(delta);
+          
+          // Handle different Responses API event types
+          // The text delta comes in 'response.output_text.delta' events
+          if (currentEvent === 'response.output_text.delta') {
+            const delta = json.delta;
+            if (delta) onDelta(delta);
+          }
+          // Also handle 'response.text.delta' format (alternative event name)
+          else if (currentEvent === 'response.text.delta') {
+            const delta = json.delta;
+            if (delta) onDelta(delta);
+          }
+          // Fallback: try to extract delta from various formats
+          else if (json.delta) {
+            onDelta(json.delta);
+          }
+          // Handle content_part delta format
+          else if (json.type === 'content_part' && json.delta?.text) {
+            onDelta(json.delta.text);
+          }
         } catch {}
+        
+        currentEvent = null; // Reset after processing data
       }
     }
   }
