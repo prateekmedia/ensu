@@ -813,6 +813,8 @@ async function loadSession(id) {
       closeModal(sessionModal);
       updateUrlForSession(session.id);
       updateVisionSupport();
+      // Ensure all Lucide icons are rendered after loading session
+      if (typeof lucide !== 'undefined') lucide.createIcons();
       return true;
     }
   } catch (e) {
